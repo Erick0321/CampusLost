@@ -1,5 +1,7 @@
 package interfaz;
 
+import modelo.Objeto;
+import modelo.Reporte;
 import negocio.GestorObjetosEncontrados;
 import negocio.RepositorioReportes;
 
@@ -10,7 +12,13 @@ public class PruebaEncontrados {
         RepositorioReportes repositorio = new RepositorioReportes();
         GestorObjetosEncontrados gestor = new GestorObjetosEncontrados(repositorio);
 
-        System.out.println("=== PRUEBA 1: registro valido ===");
+        // Simula un reporte de objeto perdido registrado por otro modulo
+        Objeto perdido = new Objeto(10, "Celular", "Electronicos", "Blanco", "iPhone con funda");
+        Reporte reportePerdido = new Reporte(10, perdido, "Perdido",
+                "UDLA Park", "Aula 205", "19/11/2026", "Pendiente");
+        repositorio.agregarReporte(reportePerdido);
+
+        System.out.println("=== PRUEBA 1: registro valido (el id no debe repetir el 10) ===");
         System.out.println(gestor.registrarObjetoEncontrado(
                 "Audifonos", "Electronicos", "Negro",
                 "UDLA Park", "Biblioteca", "21/11/2026", "Marca Sony"));
@@ -34,6 +42,16 @@ public class PruebaEncontrados {
         System.out.println(gestor.registrarObjetoEncontrado(
                 "Billetera", "Accesorios", "Cafe",
                 "UDLA Park", "Aula 101", "ayer", "De cuero"));
+
+        System.out.println("\n=== PRUEBA 6: dato null ===");
+        System.out.println(gestor.registrarObjetoEncontrado(
+                null, "Accesorios", "Rojo",
+                "UDLA Park", "Cafeteria", "20/11/2026", "Paraguas"));
+
+        System.out.println("\n=== PRUEBA 7: segundo registro valido ===");
+        System.out.println(gestor.registrarObjetoEncontrado(
+                "Llaves", "Accesorios", "Plateado",
+                "UDLA Park", "Cafeteria", "20/11/2026", "Con llavero"));
 
         System.out.println("\nTotal de reportes guardados: "
                 + repositorio.obtenerReportes().size());

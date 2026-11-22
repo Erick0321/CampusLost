@@ -10,15 +10,19 @@ import modelo.Objeto;
 public class GestorObjetosEncontrados {
 
     private RepositorioReportes repositorio;
-    private int siguienteId;
 
     public GestorObjetosEncontrados(RepositorioReportes repositorio) {
         this.repositorio = repositorio;
-        this.siguienteId = 1;
     }
+
     public boolean camposCompletos(String nombre, String categoria, String color,
                                    String campus, String ubicacion, String fecha,
                                    String descripcion) {
+        if (nombre == null || categoria == null || color == null
+                || campus == null || ubicacion == null || fecha == null
+                || descripcion == null) {
+            return false;
+        }
 
         if (nombre.trim().isEmpty() || categoria.trim().isEmpty()
                 || color.trim().isEmpty() || campus.trim().isEmpty()
@@ -90,16 +94,31 @@ public class GestorObjetosEncontrados {
         if (!resultado.equals("OK")) {
             return resultado;
         }
-
-        Objeto objeto = new Objeto(siguienteId, nombre.trim(), categoria.trim(),
+        int nuevoId = generarId();
+        Objeto objeto = new Objeto(nuevoId, nombre.trim(), categoria.trim(),
                 color.trim(), descripcion.trim());
 
-        Reporte reporte = new Reporte(siguienteId, objeto, "Encontrado",
-                campus.trim(), ubicacion.trim(), fecha.trim(), "Encontrado");
+        Reporte reporte = new Reporte(nuevoId, objeto, "Encontrado",
+                campus.trim(), ubicacion.trim(), fecha.trim(), "Pendiente");
 
         repositorio.agregarReporte(reporte);
-        siguienteId++;
 
         return "Objeto encontrado registrado con exito. ID asignado: " + reporte.getIdReporte();
+    }
+    private int generarId() {
+        int mayor = 0;
+        ArrayList<Reporte> reportes = repositorio.obtenerReportes();
+
+        for (int i = 0; i < reportes.size(); i++) {
+            Reporte reporte = reportes.get(i);
+
+            if (reporte.getIdReporte() > mayor) {
+                mayor = reporte.getIdReporte();
+            }
+            if (reporte.getObjeto().getId() > mayor) {
+                mayor = reporte.getObjeto().getId();
+            }
+        }
+        return mayor + 1;
     }
 }

@@ -53,6 +53,16 @@ public class PruebaEncontrados {
                 "Llaves", "Accesorios", "Plateado",
                 "UDLA Park", "Cafeteria", "20/11/2026", "Con llavero"));
 
+        System.out.println("\n=== PRUEBA 8: mismo objeto en otro campus (debe registrarse) ===");
+        System.out.println(gestor.registrarObjetoEncontrado(
+                "Audifonos", "Electronicos", "Negro",
+                "UDLA Granados", "Biblioteca", "21/11/2026", "Marca Sony"));
+
+        System.out.println("\n=== PRUEBA 9: repetir el de la Prueba 8 (debe ser duplicado) ===");
+        System.out.println(gestor.registrarObjetoEncontrado(
+                "audifonos", "electronicos", "negro",
+                "UDLA Granados", "biblioteca", "21/11/2026", "Con estuche"));
+
         System.out.println("\nTotal de reportes guardados: "
                 + repositorio.obtenerReportes().size());
     }

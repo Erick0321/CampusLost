@@ -49,7 +49,7 @@ public class GestorObjetosEncontrados {
         }
     }
     public boolean esDuplicado(String nombre, String categoria,
-                               String color, String ubicacion) {
+                               String color, String campus, String ubicacion) {
 
         ArrayList<Reporte> reportes = repositorio.obtenerReportes();
 
@@ -60,6 +60,7 @@ public class GestorObjetosEncontrados {
                     && existente.getObjeto().getNombre().equalsIgnoreCase(nombre.trim())
                     && existente.getObjeto().getCategoria().equalsIgnoreCase(categoria.trim())
                     && existente.getObjeto().getColor().equalsIgnoreCase(color.trim())
+                    && existente.getCampus().equalsIgnoreCase(campus.trim())
                     && existente.getUbicacion().equalsIgnoreCase(ubicacion.trim())) {
                 return true;
             }
@@ -78,7 +79,7 @@ public class GestorObjetosEncontrados {
             return "ADVERTENCIA: La fecha no es valida. Use el formato dd/MM/yyyy y que no sea posterior a hoy.";
         }
 
-        if (esDuplicado(nombre, categoria, color, ubicacion)) {
+        if (esDuplicado(nombre, categoria, color, campus, ubicacion)) {
             return "ADVERTENCIA: Ya existe un objeto encontrado con las mismas caracteristicas.";
         }
 

@@ -7,6 +7,8 @@ import modelo.Reporte;
 import negocio.RepositorioReportes;
 import negocio.ConsultorReportes;
 import negocio.GestorObjetosEncontrados;
+import negocio.GestorDevoluciones;
+
 
 public class MenuCampusLost {
 
@@ -24,6 +26,10 @@ public class MenuCampusLost {
         // Modulo 5: registro de objetos encontrados
         GestorObjetosEncontrados gestorEncontrados =
                 new GestorObjetosEncontrados(repositorio);
+
+        // Modulo 2: validacion y devolucion
+        GestorDevoluciones gestorDevoluciones =
+                new GestorDevoluciones(repositorio);
 
         String opcion;
 
@@ -153,11 +159,81 @@ public class MenuCampusLost {
                     break;
                 }
 
+
                 // MODULO 2 - RAFA
-                case "4":
-                    System.out.println(
-                            "Modulo de devoluciones pendiente de integrar.");
+                case "4": {
+
+                    System.out.println("\n=== VALIDACION DE PROPIEDAD ===");
+
+                    System.out.print("Ingrese el ID del reporte: ");
+                    String idTexto = entrada.nextLine();
+
+                    try {
+                        int id = Integer.parseInt(idTexto);
+
+                        Reporte reporte = gestorDevoluciones.buscarReportePorId(id);
+
+                        System.out.println(
+                                gestorDevoluciones.obtenerResumenBasico(reporte));
+
+                        if (reporte != null
+                                && !"Devuelto".equalsIgnoreCase(reporte.getEstado())) {
+
+                            System.out.print("Confirme el color del objeto: ");
+                            String color = entrada.nextLine();
+
+                            System.out.print("Ingrese una pista del objeto: ");
+                            String pista = entrada.nextLine();
+
+                            boolean valido = gestorDevoluciones.validarPropiedad(
+                                    id, color, pista);
+
+
+                            if (valido) {
+                                System.out.println(
+                                        "Validacion exitosa. Los datos coinciden.");
+
+                                System.out.print("Desea registrar la devolucion? (S/N): ");
+                                String respuesta = entrada.nextLine();
+
+                                if (respuesta.equalsIgnoreCase("S")) {
+
+                                    System.out.print("Nombre de quien retira: ");
+                                    String nombre = entrada.nextLine();
+
+                                    System.out.print("Cedula o ID universitario: ");
+                                    String identificacion = entrada.nextLine();
+
+                                    System.out.print("Fecha de devolucion (dd/MM/yyyy): ");
+                                    String fecha = entrada.nextLine();
+
+                                    boolean registrada = gestorDevoluciones.registrarDevolucion(
+                                            id, nombre, identificacion, fecha);
+
+                                    if (registrada) {
+                                        System.out.println(
+                                                "Devolucion registrada correctamente.");
+                                        System.out.println(
+                                                "Nuevo estado: " + reporte.getEstado());
+                                    } else {
+                                        System.out.println(
+                                                "No se pudo registrar la devolucion.");
+                                    }
+                                }
+
+                            } else {
+                                System.out.println(
+                                        "Validacion fallida. Los datos no coinciden.");
+                            }
+
+                        }
+
+                    } catch (NumberFormatException e) {
+                        System.out.println("Debe ingresar un ID numerico.");
+                    }
+
                     break;
+                }
 
                 // MODULO 3 - ALEJANDRO
                 case "5":

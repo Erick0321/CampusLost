@@ -5,10 +5,17 @@ import modelo.Objeto;
 import modelo.Reporte;
 
 import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
+
 
 public class GestorDevoluciones {
     private RepositorioReportes repositorio;
     private ArrayList<Devolucion> devoluciones;
+    private int ultimoReporteValidado = -1;
+
 
     public GestorDevoluciones(RepositorioReportes repositorio) {
         this.repositorio = repositorio;
@@ -44,7 +51,11 @@ public class GestorDevoluciones {
 
     // RF03: Validacion de propiedad comparando color y parte de la descripcion/ubicacion
     public boolean validarPropiedad(int idReporte, String colorIngresado, String pistaIngresada) {
+
+        ultimoReporteValidado = -1;
+
         Reporte reporte = buscarReportePorId(idReporte);
+
         if (reporte == null || reporte.getObjeto() == null) {
             return false;
         }
@@ -69,12 +80,25 @@ public class GestorDevoluciones {
         boolean coincideUbicacion = ubicacionReal != null
                 && ubicacionReal.toLowerCase().contains(pistaLimpia);
 
-        return coincideColor && (coincideDescripcion || coincideUbicacion);
+        boolean coincide = coincideColor
+                && (coincideDescripcion || coincideUbicacion);
+
+        if (coincide) {
+            ultimoReporteValidado = idReporte;
+        }
+
+        return coincide;
+
     }
 
     // RF04: Registro de devolucion y actualizacion del estado del reporte
     public boolean registrarDevolucion(int idReporte, String nombreReclamante, String identificacionReclamante, String fechaDevolucion) {
         Reporte reporte = buscarReportePorId(idReporte);
+
+        if (ultimoReporteValidado != idReporte) {
+            return false;
+        }
+
         if (reporte == null) {
             return false;
         }
@@ -87,6 +111,22 @@ public class GestorDevoluciones {
             return false;
         }
 
+        try {
+            DateTimeFormatter formato = DateTimeFormatter
+                    .ofPattern("dd/MM/uuuu")
+                    .withResolverStyle(ResolverStyle.STRICT);
+
+            LocalDate fechaIngresada =
+                    LocalDate.parse(fechaDevolucion.trim(), formato);
+
+            if (fechaIngresada.isAfter(LocalDate.now())) {
+                return false;
+            }
+
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+
         reporte.setEstado("Devuelto");
         Devolucion nuevaDevolucion = new Devolucion(
                 reporte,
@@ -94,8 +134,11 @@ public class GestorDevoluciones {
                 identificacionReclamante.trim(),
                 fechaDevolucion.trim()
         );
+
         devoluciones.add(nuevaDevolucion);
+        ultimoReporteValidado = -1;
         return true;
+
     }
 
     public ArrayList<Devolucion> obtenerDevoluciones() {

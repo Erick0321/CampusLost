@@ -4,15 +4,19 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import modelo.Coincidencia;
-import modelo.Objeto;
 import modelo.Reporte;
 import negocio.ComparadorObjetos;
 import negocio.ConsultorReportes;
 import negocio.GestorDevoluciones;
 import negocio.GestorObjetosEncontrados;
+import negocio.GestorObjetosPerdidos;
 import negocio.RepositorioReportes;
 
 public class MenuCampusLost {
+
+    // Lista de categorias que se muestra al usuario.
+    private static final String CATEGORIAS =
+            "Electronicos, Accesorios, Documentos, Material academico, Ropa, Llaves, Otros";
 
     public static void main(String[] args) {
         Scanner entrada = new Scanner(System.in);
@@ -20,6 +24,8 @@ public class MenuCampusLost {
         // Todos los modulos trabajan con este mismo repositorio.
         RepositorioReportes repositorio = new RepositorioReportes();
         ConsultorReportes consultor = new ConsultorReportes(repositorio);
+        GestorObjetosPerdidos gestorPerdidos =
+                new GestorObjetosPerdidos(repositorio);
         GestorObjetosEncontrados gestorEncontrados =
                 new GestorObjetosEncontrados(repositorio);
         GestorDevoluciones gestorDevoluciones =
@@ -42,10 +48,47 @@ public class MenuCampusLost {
 
             switch (opcion) {
 
-                // El modulo de registro de perdidos no se integra en esta entrega.
-                case "1":
-                    System.out.println("Registro de perdidos pendiente de integrar.");
+                // Registro de objetos perdidos (RF07 - RF08): Majo.
+                case "1": {
+                    System.out.println("\n=== REGISTRAR OBJETO PERDIDO ===");
+
+                    System.out.print("Nombre del objeto: ");
+                    String nombre = entrada.nextLine();
+                    System.out.println("Categorias disponibles: " + CATEGORIAS);
+                    System.out.print("Categoria (escriba una de la lista, sin tildes): ");
+                    String categoria = entrada.nextLine();
+                    System.out.print("Color: ");
+                    String color = entrada.nextLine();
+                    System.out.print("Campus: ");
+                    String campus = entrada.nextLine();
+                    System.out.print("Ubicacion: ");
+                    String ubicacion = entrada.nextLine();
+                    System.out.print("Fecha de perdida (dd/MM/yyyy): ");
+                    String fecha = entrada.nextLine();
+                    System.out.print("Descripcion: ");
+                    String descripcion = entrada.nextLine();
+
+                    String resultado = gestorPerdidos.registrarObjetoPerdido(
+                            nombre, categoria, color, campus,
+                            ubicacion, fecha, descripcion);
+                    System.out.println(resultado);
+
+                    // Si se registro, se buscan posibles coincidencias entre los hallazgos.
+                    if (resultado.startsWith("Objeto perdido registrado")) {
+                        ArrayList<Reporte> todos = consultor.consultarTodos();
+                        Reporte nuevo = todos.get(todos.size() - 1);
+                        ArrayList<Coincidencia> posibles =
+                                comparador.buscarCoincidenciasParaReporte(nuevo.getIdReporte());
+                        if (!posibles.isEmpty()) {
+                            System.out.println("\nSe encontraron posibles coincidencias "
+                                    + "con objetos ya encontrados:");
+                            for (Coincidencia coincidencia : posibles) {
+                                System.out.println(coincidencia);
+                            }
+                        }
+                    }
                     break;
+                }
 
                 // Registro de objetos encontrados: Felipe.
                 case "2": {
@@ -53,7 +96,8 @@ public class MenuCampusLost {
 
                     System.out.print("Nombre del objeto: ");
                     String nombre = entrada.nextLine();
-                    System.out.print("Categoria: ");
+                    System.out.println("Categorias disponibles: " + CATEGORIAS);
+                    System.out.print("Categoria (escriba una de la lista, sin tildes): ");
                     String categoria = entrada.nextLine();
                     System.out.print("Color: ");
                     String color = entrada.nextLine();
@@ -90,7 +134,8 @@ public class MenuCampusLost {
                             resultados = consultor.consultarTodos();
                             break;
                         case "2":
-                            System.out.print("Ingrese la categoria: ");
+                            System.out.println("Categorias disponibles: " + CATEGORIAS);
+                            System.out.print("Ingrese la categoria (sin tildes): ");
                             resultados = consultor.filtrarPorCategoria(entrada.nextLine());
                             break;
                         case "3":
@@ -125,6 +170,11 @@ public class MenuCampusLost {
                     Reporte reporte = gestorDevoluciones.buscarReportePorId(id);
                     System.out.println(gestorDevoluciones.obtenerResumenBasico(reporte));
                     if (reporte == null || "Devuelto".equalsIgnoreCase(reporte.getEstado())) {
+                        break;
+                    }
+                    if (!"Encontrado".equalsIgnoreCase(reporte.getTipo())) {
+                        System.out.println("Solo se pueden devolver objetos registrados como "
+                                + "encontrados.");
                         break;
                     }
 
@@ -168,7 +218,6 @@ public class MenuCampusLost {
                     System.out.println("1. Buscar coincidencias para un reporte");
                     System.out.println("2. Buscar todas las coincidencias");
                     System.out.println("3. Comparar dos reportes detalladamente");
-                    System.out.println("4. Cargar reporte PERDIDO de prueba (demostracion)");
                     System.out.println("0. Volver al menu principal");
                     System.out.print("Seleccione una opcion: ");
                     String tipoConsulta = entrada.nextLine();
@@ -209,9 +258,6 @@ public class MenuCampusLost {
                             }
                             break;
                         }
-                        case "4":
-                            cargarPerdidoDePrueba(repositorio);
-                            break;
                         case "0":
                             break;
                         default:
@@ -286,37 +332,5 @@ public class MenuCampusLost {
         } catch (NumberFormatException e) {
             return -1;
         }
-    }
-
-    // SOLO para demostrar RF05 y RF06 mientras no se integra el modulo de perdidos.
-    // Nunca se carga automaticamente ni representa un reporte real.
-    private static void cargarPerdidoDePrueba(RepositorioReportes repositorio) {
-        int idMayor = 0;
-        for (Reporte reporte : repositorio.obtenerReportes()) {
-            if (reporte.getIdReporte() > idMayor) {
-                idMayor = reporte.getIdReporte();
-            }
-            if (reporte.getObjeto() != null
-                    && reporte.getObjeto().getId() > idMayor) {
-                idMayor = reporte.getObjeto().getId();
-            }
-            if ("Perdido".equalsIgnoreCase(reporte.getTipo())
-                    && reporte.getObjeto() != null
-                    && "Audifonos".equalsIgnoreCase(reporte.getObjeto().getNombre())
-                    && "Marca Sony con estuche".equalsIgnoreCase(
-                    reporte.getObjeto().getDescripcion())
-                    && "UDLA Park".equalsIgnoreCase(reporte.getCampus())) {
-                System.out.println("El reporte perdido de prueba ya fue cargado.");
-                return;
-            }
-        }
-
-        int nuevoId = idMayor + 1;
-        Objeto objeto = new Objeto(nuevoId, "Audifonos", "Electronicos",
-                "Negro", "Marca Sony con estuche");
-        Reporte reporte = new Reporte(nuevoId, objeto, "Perdido",
-                "UDLA Park", "Biblioteca", "11/11/2026", "Pendiente");
-        repositorio.agregarReporte(reporte);
-        System.out.println("Reporte PERDIDO de prueba agregado con ID: " + nuevoId);
     }
 }

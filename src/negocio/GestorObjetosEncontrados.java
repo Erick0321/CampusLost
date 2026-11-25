@@ -3,6 +3,7 @@ package negocio;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import modelo.Reporte;
 import modelo.Objeto;
@@ -33,7 +34,9 @@ public class GestorObjetosEncontrados {
         return true;
     }
     public boolean fechaValida(String fecha) {
-        DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter formato = DateTimeFormatter
+                .ofPattern("dd/MM/uuuu")
+                .withResolverStyle(ResolverStyle.STRICT);
 
         try {
             LocalDate fechaHallazgo = LocalDate.parse(fecha.trim(), formato);

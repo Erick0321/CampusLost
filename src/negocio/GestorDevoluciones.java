@@ -62,6 +62,10 @@ public class GestorDevoluciones {
         if ("Devuelto".equalsIgnoreCase(reporte.getEstado())) {
             return false;
         }
+        // Solo se entregan objetos que fueron encontrados (no reportes de perdida).
+        if (!"Encontrado".equalsIgnoreCase(reporte.getTipo())) {
+            return false;
+        }
         if (colorIngresado == null || colorIngresado.trim().isEmpty()
                 || pistaIngresada == null || pistaIngresada.trim().isEmpty()) {
             return false;
@@ -102,7 +106,8 @@ public class GestorDevoluciones {
         if (reporte == null) {
             return false;
         }
-        if ("Devuelto".equalsIgnoreCase(reporte.getEstado())) {
+        if ("Devuelto".equalsIgnoreCase(reporte.getEstado())
+                || !"Encontrado".equalsIgnoreCase(reporte.getTipo())) {
             return false;
         }
         if (nombreReclamante == null || nombreReclamante.trim().isEmpty()

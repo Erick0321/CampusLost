@@ -139,3 +139,4 @@ public class PruebaConsultor {
                 + consultor.obtenerObjetoMasPerdido());
     }
 }
+
